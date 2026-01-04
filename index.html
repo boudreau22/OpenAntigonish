@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COVID-19 Vaccine Timeline</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .timeline-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .timeline-item {
+            background: #fff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 5px solid #007bff;
+        }
+        .timeline-item h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .date {
+            font-weight: bold;
+            color: #555;
+            font-size: 0.9em;
+        }
+        .description {
+            margin-top: 10px;
+            color: #333;
+        }
+        .category-header {
+            margin-top: 40px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>COVID-19 Vaccine Timeline</h1>
+    <div id="content" class="timeline-container">
+        <!-- Content will be loaded here -->
+    </div>
+
+    <script>
+        async function loadData() {
+            try {
+                const response = await fetch('vaccine_timeline.json');
+                const data = await response.json();
+                const contentDiv = document.getElementById('content');
+
+                function createSection(title, items, isRange = false) {
+                    const header = document.createElement('h2');
+                    header.className = 'category-header';
+                    header.textContent = title;
+                    contentDiv.appendChild(header);
+
+                    // Sort items by date/start date
+                    items.sort((a, b) => {
+                        const dateA = new Date(a.date || a.start);
+                        const dateB = new Date(b.date || b.start);
+                        return dateA - dateB;
+                    });
+
+                    items.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'timeline-item';
+                        if (item.color) {
+                            div.style.borderLeftColor = item.color;
+                        }
+
+                        const h3 = document.createElement('h3');
+                        h3.textContent = item.title;
+                        if (item.color) {
+                            h3.style.color = item.color;
+                        }
+                        div.appendChild(h3);
+
+                        const dateP = document.createElement('p');
+                        dateP.className = 'date';
+                        if (isRange) {
+                            dateP.textContent = `${item.start} - ${item.end}`;
+                        } else {
+                            dateP.textContent = item.date;
+                        }
+                        div.appendChild(dateP);
+
+                        const descP = document.createElement('p');
+                        descP.className = 'description';
+                        descP.textContent = item.description;
+                        div.appendChild(descP);
+
+                        contentDiv.appendChild(div);
+                    });
+                }
+
+                if (data.pfizerFacts) createSection('Pfizer Facts', data.pfizerFacts);
+                if (data.pfizerTimeline) createSection('Pfizer Timeline', data.pfizerTimeline, true);
+                if (data.otherVaccines) createSection('Other Vaccines', data.otherVaccines);
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('content').innerHTML = '<p style="color:red; text-align:center;">Error loading timeline data.</p>';
+            }
+        }
+
+        loadData();
+    </script>
+
+</body>
+</html>
