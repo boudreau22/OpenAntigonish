@@ -4,118 +4,156 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>COVID-19 Vaccine Timeline</title>
+    <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-core.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-timeline.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f9;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        .timeline-container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .timeline-item {
-            background: #fff;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            border-left: 5px solid #007bff;
-        }
-        .timeline-item h3 {
-            margin-top: 0;
-            color: #007bff;
-        }
-        .date {
-            font-weight: bold;
-            color: #555;
-            font-size: 0.9em;
-        }
-        .description {
-            margin-top: 10px;
-            color: #333;
-        }
-        .category-header {
-            margin-top: 40px;
-            border-bottom: 2px solid #ddd;
-            padding-bottom: 10px;
+        html, body, #container {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
         }
     </style>
 </head>
 <body>
 
-    <h1>COVID-19 Vaccine Timeline</h1>
-    <div id="content" class="timeline-container">
-        <!-- Content will be loaded here -->
-    </div>
+    <div id="container"></div>
 
     <script>
-        async function loadData() {
-            try {
-                const response = await fetch('vaccine_timeline.json');
-                const data = await response.json();
-                const contentDiv = document.getElementById('content');
+        anychart.onDocumentReady(function () {
+            fetch('vaccine_timeline.json')
+                .then(response => response.json())
+                .then(data => {
+                    // Create the chart
+                    var chart = anychart.timeline();
 
-                function createSection(title, items, isRange = false) {
-                    const header = document.createElement('h2');
-                    header.className = 'category-header';
-                    header.textContent = title;
-                    contentDiv.appendChild(header);
+                    // Process Pfizer Timeline (Ranges)
+                    var pfizerRangeData = data.pfizerTimeline.map(item => {
+                        return {
+                            name: item.title,
+                            start: new Date(item.start),
+                            end: new Date(item.end),
+                            description: item.description,
+                            fill: item.color,
+                            stroke: item.color
+                        };
+                    });
+                    var rangeSeries = chart.range(pfizerRangeData);
+                    rangeSeries.name("Pfizer Timeline");
 
-                    // Sort items by date/start date
-                    items.sort((a, b) => {
-                        const dateA = new Date(a.date || a.start);
-                        const dateB = new Date(b.date || b.start);
-                        return dateA - dateB;
+                     // Configure tooltip for ranges
+                    rangeSeries.tooltip().useHtml(true);
+                    rangeSeries.tooltip().format(function() {
+                        var start = anychart.format.dateTime(this.start, "dd MMM yyyy");
+                        var end = anychart.format.dateTime(this.end, "dd MMM yyyy");
+                        return "<span style='font-weight:600;font-size:12pt'>" +
+                               this.getData("name") + "</span>" +
+                               "<br><br>Dates: " + start + " - " + end +
+                               "<br>" + this.getData("description");
                     });
 
-                    items.forEach(item => {
-                        const div = document.createElement('div');
-                        div.className = 'timeline-item';
-                        if (item.color) {
-                            div.style.borderLeftColor = item.color;
-                        }
 
-                        const h3 = document.createElement('h3');
-                        h3.textContent = item.title;
-                        if (item.color) {
-                            h3.style.color = item.color;
-                        }
-                        div.appendChild(h3);
-
-                        const dateP = document.createElement('p');
-                        dateP.className = 'date';
-                        if (isRange) {
-                            dateP.textContent = `${item.start} - ${item.end}`;
-                        } else {
-                            dateP.textContent = item.date;
-                        }
-                        div.appendChild(dateP);
-
-                        const descP = document.createElement('p');
-                        descP.className = 'description';
-                        descP.textContent = item.description;
-                        div.appendChild(descP);
-
-                        contentDiv.appendChild(div);
+                    // Process Pfizer Facts (Moments)
+                    var pfizerMomentData = data.pfizerFacts.map(item => {
+                        return {
+                            x: new Date(item.date),
+                            y: item.title,
+                            description: item.description
+                        };
                     });
-                }
+                    var momentSeries1 = chart.moment(pfizerMomentData);
+                    momentSeries1.name("Pfizer Facts");
+                    momentSeries1.normal().markers().fill("#007bff");
+                    momentSeries1.normal().markers().stroke("#0056b3");
 
-                if (data.pfizerFacts) createSection('Pfizer Facts', data.pfizerFacts);
-                if (data.pfizerTimeline) createSection('Pfizer Timeline', data.pfizerTimeline, true);
-                if (data.otherVaccines) createSection('Other Vaccines', data.otherVaccines);
+                    // Process Other Vaccines (Moments)
+                    var otherMomentData = data.otherVaccines.map(item => {
+                        return {
+                            x: new Date(item.date),
+                            y: item.title,
+                            description: item.description
+                        };
+                    });
+                    var momentSeries2 = chart.moment(otherMomentData);
+                    momentSeries2.name("Other Vaccines");
+                    momentSeries2.normal().markers().fill("#ffc107");
+                    momentSeries2.normal().markers().stroke("#d39e00");
 
-            } catch (error) {
-                console.error('Error loading data:', error);
-                document.getElementById('content').innerHTML = '<p style="color:red; text-align:center;">Error loading timeline data.</p>';
-            }
-        }
 
-        loadData();
+                    // Configure tooltips for moments
+                    var momentTooltipFormat = function() {
+                        var date = anychart.format.dateTime(this.x, "dd MMM yyyy");
+                        return "<span style='font-weight:600;font-size:12pt'>" +
+                               this.value + "</span>" +
+                               "<br><br>Date: " + date +
+                               "<br>" + this.getData("description");
+                    };
+
+                    momentSeries1.tooltip().useHtml(true);
+                    momentSeries1.tooltip().format(momentTooltipFormat);
+                    momentSeries2.tooltip().useHtml(true);
+                    momentSeries2.tooltip().format(momentTooltipFormat);
+
+
+                    // Add Today Marker
+                    var todayMarker = chart.todayMarker();
+                    todayMarker.stroke("#dd2c00", 2, "5 2");
+
+                    // Add Year Markers
+                    // Calculate year range from data
+                    var allItems = [];
+                    if (data.pfizerTimeline) allItems = allItems.concat(data.pfizerTimeline);
+                    if (data.pfizerFacts) allItems = allItems.concat(data.pfizerFacts);
+                    if (data.otherVaccines) allItems = allItems.concat(data.otherVaccines);
+
+                    var minTs = Date.now();
+                    var maxTs = Date.now();
+
+                    allItems.forEach(item => {
+                        var dates = [];
+                        if (item.date) dates.push(new Date(item.date));
+                        if (item.start) dates.push(new Date(item.start));
+                        if (item.end) dates.push(new Date(item.end));
+
+                        dates.forEach(d => {
+                            if (!isNaN(d.getTime())) {
+                                if (d.getTime() < minTs) minTs = d.getTime();
+                                if (d.getTime() > maxTs) maxTs = d.getTime();
+                            }
+                        });
+                    });
+
+                    var startYear = new Date(minTs).getFullYear();
+                    var endYear = new Date(maxTs).getFullYear();
+
+                    var markerIndex = 0;
+                    for (var y = startYear; y <= endYear; y++) {
+                        var lineMarker = chart.lineMarker(markerIndex);
+                        lineMarker.value(new Date(y, 0, 1));
+                        lineMarker.stroke("#555", 2, "5 2");
+
+                        var textMarker = chart.textMarker(markerIndex);
+                        textMarker.value(new Date(y, 0, 1));
+                        textMarker.text(y.toString());
+                        textMarker.fontSize(20);
+                        textMarker.fontColor("#555");
+                        textMarker.fontWeight("bold");
+                        textMarker.anchor("left-top");
+                        textMarker.padding(5);
+
+                        markerIndex++;
+                    }
+
+
+                    // Set chart container and draw
+                    chart.container("container");
+                    chart.draw();
+
+                    // Zoom to fit the data
+                    chart.fit();
+                })
+                .catch(error => console.error('Error loading data:', error));
+        });
     </script>
 
 </body>
