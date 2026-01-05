@@ -94,5 +94,47 @@
         "description": "Expected completion of sewer lining work."
       }
     ]
+  },
+  "activeTrail": {
+    "title": "Active Transportation Trail",
+    "color": "#28a745",
+    "phases": [
+      {
+        "name": "Phase 1: West St to Highland",
+        "start": "2024-06-01",
+        "end": "2025-12-31",
+        "description": "Construction of paved multi-use pathway. West St paving deferred to West St project."
+      },
+      {
+        "name": "Phase 2: St. Ninian St",
+        "start": "2026-05-01",
+        "end": "2026-10-31",
+        "description": "Proposed replacement of sidewalk with shared-use trail (Pending Approval)."
+      },
+      {
+        "name": "Phase 3: Columbus Field",
+        "start": "2026-06-01",
+        "end": "2026-11-30",
+        "description": "New footpath and pedestrian bridge (Pending Approval)."
+      },
+      {
+        "name": "Phase 4: Bay Street",
+        "start": "2026-04-01",
+        "end": "2026-09-01",
+        "description": "Designed alongside Bay St Project Phase 2 (Pending Funding)."
+      }
+    ],
+    "events": [
+      {
+        "name": "Functional Plan",
+        "date": "2020-06-01",
+        "description": "Town & County completed the Active Transportation Functional Plan."
+      },
+      {
+        "name": "Phase 1 Completion",
+        "date": "2025-10-01",
+        "description": "First phase of AT Trail complete from roundabout to Highland Drive."
+      }
+    ]
   }
 }

@@ -29,73 +29,83 @@
                     // Create the chart
                     var chart = anychart.timeline();
 
-                    // --- Bay Street Project (Blue) ---
-                    // Range Series (Phases)
-                    var bayRanges = data.bayStreet.phases.map(p => ({
-                        name: p.name,
-                        start: new Date(p.start),
-                        end: new Date(p.end),
-                        fill: data.bayStreet.color,
-                        stroke: data.bayStreet.color,
-                        description: p.description
-                    }));
-                    var bayRangeSeries = chart.range(bayRanges);
-                    bayRangeSeries.name("Bay St Phases");
-                    bayRangeSeries.labels().format("{%name}");
-                    bayRangeSeries.labels().fontColor("#ffffff");
+                    // Function to create series for a project
+                    function createProjectSeries(projectData, projectKey) {
+                        // Color with opacity for ranges
+                        // We can't easily parse hex here without a library, but AnyChart supports opacity in fill string or object
+                        // Let's assume hex and use AnyChart's color helper or just simple hex if no opacity needed
+                        // User requested opacity. Let's use anychart.color.lighten or set opacity.
+                        var color = projectData.color;
+                        var fill = anychart.color.setOpacity(color, 0.6);
 
-                    // Moment Series (Events)
-                    var bayMoments = data.bayStreet.events.map(e => ({
-                        x: new Date(e.date),
-                        y: e.name,
-                        description: e.description
-                    }));
-                    var bayMomentSeries = chart.moment(bayMoments);
-                    bayMomentSeries.name("Bay St Events");
-                    bayMomentSeries.normal().markers().fill(data.bayStreet.color);
-                    bayMomentSeries.normal().markers().stroke(data.bayStreet.color);
-                    // Connect moments visually (stem) - customized direction
-                    bayMomentSeries.direction("down");
+                        // Range Series
+                        var ranges = projectData.phases.map(p => ({
+                            name: p.name,
+                            start: new Date(p.start),
+                            end: new Date(p.end),
+                            fill: fill,
+                            stroke: color,
+                            description: p.description
+                        }));
+                        var rangeSeries = chart.range(ranges);
+                        rangeSeries.name(projectData.title); // For Legend
+                        // Set series fill/stroke to match project color so Legend picks it up
+                        rangeSeries.fill(fill);
+                        rangeSeries.stroke(color);
 
-                    // --- West Street Project (Purple) ---
-                    // Range Series (Phases)
-                    var westRanges = data.westStreet.phases.map(p => ({
-                        name: p.name,
-                        start: new Date(p.start),
-                        end: new Date(p.end),
-                        fill: data.westStreet.color,
-                        stroke: data.westStreet.color,
-                        description: p.description
-                    }));
-                    var westRangeSeries = chart.range(westRanges);
-                    westRangeSeries.name("West St Phases");
-                    westRangeSeries.labels().format("{%name}");
-                    westRangeSeries.labels().fontColor("#ffffff");
+                        rangeSeries.labels().format("{%name}");
+                        rangeSeries.labels().fontColor("#ffffff");
+                        rangeSeries.tooltip().useHtml(true);
 
-                    // Moment Series (Events)
-                    var westMoments = data.westStreet.events.map(e => ({
-                        x: new Date(e.date),
-                        y: e.name,
-                        description: e.description
-                    }));
-                    var westMomentSeries = chart.moment(westMoments);
-                    westMomentSeries.name("West St Events");
-                    westMomentSeries.normal().markers().fill(data.westStreet.color);
-                    westMomentSeries.normal().markers().stroke(data.westStreet.color);
-                    westMomentSeries.direction("down");
+                        // Moment Series
+                        var moments = projectData.events.map(e => ({
+                            x: new Date(e.date),
+                            y: e.name,
+                            description: e.description
+                        }));
+                        var momentSeries = chart.moment(moments);
+                        momentSeries.name(projectData.title + " Events"); // For Legend if needed, or hide
+                        momentSeries.normal().markers().fill(color);
+                        momentSeries.normal().markers().stroke(color);
+                        momentSeries.direction("down");
 
+                        // We might want to hide moment series from legend to avoid clutter?
+                        // Or show them. The user said "label somewhere what the projects are".
+                        // Legend items for "Bay Street Capital Project" (Range) is enough.
+                        momentSeries.legendItem().enabled(false);
 
-                    // --- Tooltips ---
+                        return { ranges, moments };
+                    }
+
+                    var allData = [];
+
+                    // Bay Street
+                    var bay = createProjectSeries(data.bayStreet, "bayStreet");
+                    allData = allData.concat(bay.ranges.map(r => r.start), bay.ranges.map(r => r.end), bay.moments.map(m => m.x));
+
+                    // West Street
+                    var west = createProjectSeries(data.westStreet, "westStreet");
+                    allData = allData.concat(west.ranges.map(r => r.start), west.ranges.map(r => r.end), west.moments.map(m => m.x));
+
+                    // Active Trail
+                    if (data.activeTrail) {
+                        var trail = createProjectSeries(data.activeTrail, "activeTrail");
+                        allData = allData.concat(trail.ranges.map(r => r.start), trail.ranges.map(r => r.end), trail.moments.map(m => m.x));
+                    }
+
+                    // --- Tooltips (Global format if not overridden) ---
                     chart.tooltip().useHtml(true);
                     chart.tooltip().format(function() {
                         var start = this.start ? anychart.format.dateTime(this.start, "dd MMM yyyy") : null;
                         var end = this.end ? anychart.format.dateTime(this.end, "dd MMM yyyy") : null;
                         var date = this.x ? anychart.format.dateTime(this.x, "dd MMM yyyy") : null;
 
-                        var title = this.getData("name") || this.value; // Range name or Moment value
+                        var title = this.getData("name") || this.value;
                         var desc = this.getData("description");
+                        var seriesName = this.seriesName;
 
-                        var content = "<span style='font-weight:600;font-size:12pt'>" + title + "</span><br><br>";
+                        var content = "<span style='font-weight:600;font-size:12pt'>" + title + "</span><br>";
+                        content += "<span style='font-size:10pt; color: #888'>" + seriesName + "</span><br><br>";
 
                         if (start && end) {
                             content += "Dates: " + start + " - " + end + "<br>";
@@ -112,28 +122,25 @@
                     // --- Scroller ---
                     chart.scroller().enabled(true);
 
-                    // --- Markers ---
+                    // --- Legend ---
+                    chart.legend().enabled(true);
+                    chart.legend().fontSize(14);
+                    chart.legend().padding(10);
 
-                    // Today Marker
+                    // --- Markers ---
                     var todayMarker = chart.todayMarker();
                     todayMarker.stroke("#dd2c00", 2, "5 2");
 
-                    // Year Markers (Vertical Lines)
-                    // Calculate range
-                    var allDates = [];
-                    [...bayRanges, ...westRanges].forEach(r => { allDates.push(r.start); allDates.push(r.end); });
-                    [...bayMoments, ...westMoments].forEach(m => allDates.push(m.x));
-
-                    var minYear = new Date(Math.min.apply(null, allDates)).getFullYear();
-                    var maxYear = new Date(Math.max.apply(null, allDates)).getFullYear();
-                    // Extend max year for visibility if today is later
+                    // Year Markers
+                    var minYear = new Date(Math.min.apply(null, allData)).getFullYear();
+                    var maxYear = new Date(Math.max.apply(null, allData)).getFullYear();
                     maxYear = Math.max(maxYear, new Date().getFullYear());
 
                     var markerIndex = 0;
                     for (var y = minYear; y <= maxYear; y++) {
                         var lineMarker = chart.lineMarker(markerIndex);
                         lineMarker.value(new Date(y, 0, 1));
-                        lineMarker.stroke("#555", 2, "5 2"); // Dashed line
+                        lineMarker.stroke("#555", 2, "5 2");
 
                         var textMarker = chart.textMarker(markerIndex);
                         textMarker.value(new Date(y, 0, 1));
@@ -147,21 +154,11 @@
                         markerIndex++;
                     }
 
-                    // --- Layout Adjustments for "Stages above Month/year row" ---
-                    // By default, range series are plotted as bars.
-                    // We can adjust their height or labels.
-                    // To make "points stem from their stages", we position moments below ranges if possible,
-                    // but the timeline layout logic is automatic.
-                    // Setting direction("down") on moments helps them hang below the axis/ranges.
-
-                    // Add Title
+                    // Title
                     chart.title("Town of Antigonish Capital Projects Timeline");
 
-                    // Set chart container and draw
                     chart.container("container");
                     chart.draw();
-
-                    // Zoom to data
                     chart.fit();
                 })
                 .catch(error => console.error('Error loading data:', error));
