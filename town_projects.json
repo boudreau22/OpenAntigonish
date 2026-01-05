@@ -1,0 +1,140 @@
+{
+  "bayStreet": {
+    "title": "Bay Street Capital Project",
+    "color": "#007bff",
+    "phases": [
+      {
+        "name": "Phase 1: Construction",
+        "start": "2025-10-16",
+        "end": "2025-12-31",
+        "description": "Water, sewer, active transportation trail, and road upgrades from Haley Road to Railway tracks."
+      },
+      {
+        "name": "Phase 2: Planned",
+        "start": "2026-04-01",
+        "end": "2026-09-01",
+        "description": "Upgrades from Railway tracks to Town boundary (Pending budget approval)."
+      }
+    ],
+    "events": [
+      {
+        "name": "Tender Awarded",
+        "date": "2025-10-16",
+        "description": "Phase 1 tender awarded to Dexter Construction."
+      },
+      {
+        "name": "Construction Schedule Released",
+        "date": "2025-10-31",
+        "description": "Initial weekly construction schedule released."
+      },
+      {
+        "name": "Emergency Council Meeting",
+        "date": "2025-12-11",
+        "description": "Meeting to address resident concerns regarding traffic and delays."
+      },
+      {
+        "name": "Final Paving (2025)",
+        "date": "2025-12-18",
+        "description": "Final day of paving for Phase 1. Base coat completed."
+      },
+      {
+        "name": "Substantial Completion (Phase 1)",
+        "date": "2025-12-31",
+        "description": "Target date for substantial completion of Phase 1."
+      }
+    ]
+  },
+  "westStreet": {
+    "title": "West / James St. Capital Project",
+    "color": "#6f42c1",
+    "phases": [
+      {
+        "name": "Funding Confirmed",
+        "start": "2025-08-15",
+        "end": "2025-10-31",
+        "description": "Funding confirmed late summer, allowing project to proceed."
+      },
+      {
+        "name": "Phase 1: Construction",
+        "start": "2025-11-01",
+        "end": "2025-12-22",
+        "description": "Sewer lining, asphalt resurfacing, and sidewalks on West/James Streets."
+      },
+      {
+        "name": "Phase 2: Planned",
+        "start": "2026-05-01",
+        "end": "2026-09-01",
+        "description": "Water main upgrades and remaining street work (Pending approval)."
+      }
+    ],
+    "events": [
+      {
+        "name": "Funding Confirmed",
+        "date": "2025-08-30",
+        "description": "External funding confirmed, allowing tendering to proceed."
+      },
+      {
+        "name": "Work Ongoing",
+        "date": "2025-11-03",
+        "description": "Crews on-site for West Street improvements."
+      },
+      {
+        "name": "Paving Begins",
+        "date": "2025-12-12",
+        "description": "Final stretch of roadwork paving begins."
+      },
+      {
+        "name": "Base Paving Complete",
+        "date": "2025-12-18",
+        "description": "Base coat completed. Sewer work paused for holidays."
+      },
+      {
+        "name": "Sewer Lining Completion",
+        "date": "2025-12-22",
+        "description": "Expected completion of sewer lining work."
+      }
+    ]
+  },
+  "activeTrail": {
+    "title": "Active Transportation Trail",
+    "color": "#28a745",
+    "phases": [
+      {
+        "name": "Phase 1: West St to Highland",
+        "start": "2024-06-01",
+        "end": "2025-12-31",
+        "description": "Construction of paved multi-use pathway. West St paving deferred to West St project."
+      },
+      {
+        "name": "Phase 2: St. Ninian St",
+        "start": "2026-05-01",
+        "end": "2026-10-31",
+        "description": "Proposed replacement of sidewalk with shared-use trail (Pending Approval)."
+      },
+      {
+        "name": "Phase 3: Columbus Field",
+        "start": "2026-06-01",
+        "end": "2026-11-30",
+        "description": "New footpath and pedestrian bridge (Pending Approval)."
+      },
+      {
+        "name": "Phase 4: Bay Street",
+        "start": "2026-04-01",
+        "end": "2026-09-01",
+        "description": "Designed alongside Bay St Project Phase 2 (Pending Funding)."
+      }
+    ],
+    "events": [
+      {
+        "name": "Functional Plan",
+        "date": "2020-06-01",
+        "description": "Town & County completed the Active Transportation Functional Plan."
+      },
+      {
+        "name": "Phase 1 Completion",
+        "date": "2025-10-01",
+        "description": "First phase of AT Trail complete from roundabout to Highland Drive."
+      }
+    ]
+  }
+}
