@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COVID-19 Vaccine Timeline</title>
+    <title>Town of Antigonish Capital Projects Timeline</title>
     <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-core.min.js"></script>
     <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-timeline.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.anychart.com/releases/8.11.0/css/anychart-ui.min.css">
     <style>
         html, body, #container {
             width: 100%;
@@ -21,121 +23,122 @@
 
     <script>
         anychart.onDocumentReady(function () {
-            fetch('vaccine_timeline.json')
+            fetch('town_projects.json')
                 .then(response => response.json())
                 .then(data => {
                     // Create the chart
                     var chart = anychart.timeline();
 
-                    // Process Pfizer Timeline (Ranges)
-                    var pfizerRangeData = data.pfizerTimeline.map(item => {
-                        return {
-                            name: item.title,
-                            start: new Date(item.start),
-                            end: new Date(item.end),
-                            description: item.description,
-                            fill: item.color,
-                            stroke: item.color
-                        };
+                    // --- Bay Street Project (Blue) ---
+                    // Range Series (Phases)
+                    var bayRanges = data.bayStreet.phases.map(p => ({
+                        name: p.name,
+                        start: new Date(p.start),
+                        end: new Date(p.end),
+                        fill: data.bayStreet.color,
+                        stroke: data.bayStreet.color,
+                        description: p.description
+                    }));
+                    var bayRangeSeries = chart.range(bayRanges);
+                    bayRangeSeries.name("Bay St Phases");
+                    bayRangeSeries.labels().format("{%name}");
+                    bayRangeSeries.labels().fontColor("#ffffff");
+
+                    // Moment Series (Events)
+                    var bayMoments = data.bayStreet.events.map(e => ({
+                        x: new Date(e.date),
+                        y: e.name,
+                        description: e.description
+                    }));
+                    var bayMomentSeries = chart.moment(bayMoments);
+                    bayMomentSeries.name("Bay St Events");
+                    bayMomentSeries.normal().markers().fill(data.bayStreet.color);
+                    bayMomentSeries.normal().markers().stroke(data.bayStreet.color);
+                    // Connect moments visually (stem) - customized direction
+                    bayMomentSeries.direction("down");
+
+                    // --- West Street Project (Purple) ---
+                    // Range Series (Phases)
+                    var westRanges = data.westStreet.phases.map(p => ({
+                        name: p.name,
+                        start: new Date(p.start),
+                        end: new Date(p.end),
+                        fill: data.westStreet.color,
+                        stroke: data.westStreet.color,
+                        description: p.description
+                    }));
+                    var westRangeSeries = chart.range(westRanges);
+                    westRangeSeries.name("West St Phases");
+                    westRangeSeries.labels().format("{%name}");
+                    westRangeSeries.labels().fontColor("#ffffff");
+
+                    // Moment Series (Events)
+                    var westMoments = data.westStreet.events.map(e => ({
+                        x: new Date(e.date),
+                        y: e.name,
+                        description: e.description
+                    }));
+                    var westMomentSeries = chart.moment(westMoments);
+                    westMomentSeries.name("West St Events");
+                    westMomentSeries.normal().markers().fill(data.westStreet.color);
+                    westMomentSeries.normal().markers().stroke(data.westStreet.color);
+                    westMomentSeries.direction("down");
+
+
+                    // --- Tooltips ---
+                    chart.tooltip().useHtml(true);
+                    chart.tooltip().format(function() {
+                        var start = this.start ? anychart.format.dateTime(this.start, "dd MMM yyyy") : null;
+                        var end = this.end ? anychart.format.dateTime(this.end, "dd MMM yyyy") : null;
+                        var date = this.x ? anychart.format.dateTime(this.x, "dd MMM yyyy") : null;
+
+                        var title = this.getData("name") || this.value; // Range name or Moment value
+                        var desc = this.getData("description");
+
+                        var content = "<span style='font-weight:600;font-size:12pt'>" + title + "</span><br><br>";
+
+                        if (start && end) {
+                            content += "Dates: " + start + " - " + end + "<br>";
+                        } else if (date) {
+                            content += "Date: " + date + "<br>";
+                        }
+
+                        if (desc) {
+                            content += desc;
+                        }
+                        return content;
                     });
-                    var rangeSeries = chart.range(pfizerRangeData);
-                    rangeSeries.name("Pfizer Timeline");
 
-                     // Configure tooltip for ranges
-                    rangeSeries.tooltip().useHtml(true);
-                    rangeSeries.tooltip().format(function() {
-                        var start = anychart.format.dateTime(this.start, "dd MMM yyyy");
-                        var end = anychart.format.dateTime(this.end, "dd MMM yyyy");
-                        return "<span style='font-weight:600;font-size:12pt'>" +
-                               this.getData("name") + "</span>" +
-                               "<br><br>Dates: " + start + " - " + end +
-                               "<br>" + this.getData("description");
-                    });
+                    // --- Scroller ---
+                    chart.scroller().enabled(true);
 
+                    // --- Markers ---
 
-                    // Process Pfizer Facts (Moments)
-                    var pfizerMomentData = data.pfizerFacts.map(item => {
-                        return {
-                            x: new Date(item.date),
-                            y: item.title,
-                            description: item.description
-                        };
-                    });
-                    var momentSeries1 = chart.moment(pfizerMomentData);
-                    momentSeries1.name("Pfizer Facts");
-                    momentSeries1.normal().markers().fill("#007bff");
-                    momentSeries1.normal().markers().stroke("#0056b3");
-
-                    // Process Other Vaccines (Moments)
-                    var otherMomentData = data.otherVaccines.map(item => {
-                        return {
-                            x: new Date(item.date),
-                            y: item.title,
-                            description: item.description
-                        };
-                    });
-                    var momentSeries2 = chart.moment(otherMomentData);
-                    momentSeries2.name("Other Vaccines");
-                    momentSeries2.normal().markers().fill("#ffc107");
-                    momentSeries2.normal().markers().stroke("#d39e00");
-
-
-                    // Configure tooltips for moments
-                    var momentTooltipFormat = function() {
-                        var date = anychart.format.dateTime(this.x, "dd MMM yyyy");
-                        return "<span style='font-weight:600;font-size:12pt'>" +
-                               this.value + "</span>" +
-                               "<br><br>Date: " + date +
-                               "<br>" + this.getData("description");
-                    };
-
-                    momentSeries1.tooltip().useHtml(true);
-                    momentSeries1.tooltip().format(momentTooltipFormat);
-                    momentSeries2.tooltip().useHtml(true);
-                    momentSeries2.tooltip().format(momentTooltipFormat);
-
-
-                    // Add Today Marker
+                    // Today Marker
                     var todayMarker = chart.todayMarker();
                     todayMarker.stroke("#dd2c00", 2, "5 2");
 
-                    // Add Year Markers
-                    // Calculate year range from data
-                    var allItems = [];
-                    if (data.pfizerTimeline) allItems = allItems.concat(data.pfizerTimeline);
-                    if (data.pfizerFacts) allItems = allItems.concat(data.pfizerFacts);
-                    if (data.otherVaccines) allItems = allItems.concat(data.otherVaccines);
+                    // Year Markers (Vertical Lines)
+                    // Calculate range
+                    var allDates = [];
+                    [...bayRanges, ...westRanges].forEach(r => { allDates.push(r.start); allDates.push(r.end); });
+                    [...bayMoments, ...westMoments].forEach(m => allDates.push(m.x));
 
-                    var minTs = Date.now();
-                    var maxTs = Date.now();
-
-                    allItems.forEach(item => {
-                        var dates = [];
-                        if (item.date) dates.push(new Date(item.date));
-                        if (item.start) dates.push(new Date(item.start));
-                        if (item.end) dates.push(new Date(item.end));
-
-                        dates.forEach(d => {
-                            if (!isNaN(d.getTime())) {
-                                if (d.getTime() < minTs) minTs = d.getTime();
-                                if (d.getTime() > maxTs) maxTs = d.getTime();
-                            }
-                        });
-                    });
-
-                    var startYear = new Date(minTs).getFullYear();
-                    var endYear = new Date(maxTs).getFullYear();
+                    var minYear = new Date(Math.min.apply(null, allDates)).getFullYear();
+                    var maxYear = new Date(Math.max.apply(null, allDates)).getFullYear();
+                    // Extend max year for visibility if today is later
+                    maxYear = Math.max(maxYear, new Date().getFullYear());
 
                     var markerIndex = 0;
-                    for (var y = startYear; y <= endYear; y++) {
+                    for (var y = minYear; y <= maxYear; y++) {
                         var lineMarker = chart.lineMarker(markerIndex);
                         lineMarker.value(new Date(y, 0, 1));
-                        lineMarker.stroke("#555", 2, "5 2");
+                        lineMarker.stroke("#555", 2, "5 2"); // Dashed line
 
                         var textMarker = chart.textMarker(markerIndex);
                         textMarker.value(new Date(y, 0, 1));
                         textMarker.text(y.toString());
-                        textMarker.fontSize(20);
+                        textMarker.fontSize(16);
                         textMarker.fontColor("#555");
                         textMarker.fontWeight("bold");
                         textMarker.anchor("left-top");
@@ -144,12 +147,21 @@
                         markerIndex++;
                     }
 
+                    // --- Layout Adjustments for "Stages above Month/year row" ---
+                    // By default, range series are plotted as bars.
+                    // We can adjust their height or labels.
+                    // To make "points stem from their stages", we position moments below ranges if possible,
+                    // but the timeline layout logic is automatic.
+                    // Setting direction("down") on moments helps them hang below the axis/ranges.
+
+                    // Add Title
+                    chart.title("Town of Antigonish Capital Projects Timeline");
 
                     // Set chart container and draw
                     chart.container("container");
                     chart.draw();
 
-                    // Zoom to fit the data
+                    // Zoom to data
                     chart.fit();
                 })
                 .catch(error => console.error('Error loading data:', error));
