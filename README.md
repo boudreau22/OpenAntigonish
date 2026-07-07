@@ -1,5 +1,9 @@
 # Town of Antigonish — Capital Projects Timeline
 
+> [!WARNING]
+> **This repository is superseded by [openantigonishAI](file:///C:/GitHub/openantigonishAI).**  
+> Active development has been consolidated into the `openantigonishAI` repository. This repository is archived and kept as a historical reference.
+
 An interactive, data‑driven visualization of municipal capital projects in the Town of Antigonish.  
 This timeline highlights project phases, milestones, delays, and completion dates for initiatives such as Bay Street, West Street, and the Active Transportation Trail.
 
